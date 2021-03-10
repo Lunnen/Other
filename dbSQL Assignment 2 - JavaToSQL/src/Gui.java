@@ -25,7 +25,7 @@ public class Gui extends JFrame {
     protected JTextField tf;
     protected JTextField inputID;
     protected JTextArea ta;
-    protected JTextArea borrowedArea;
+    protected JTextArea bottomInfo;
     protected JButton actonIDchosen;
     protected JButton topLeftButton;
     protected JButton topRightButton;
@@ -90,7 +90,7 @@ public class Gui extends JFrame {
                 loginPassword = "abc12345";
 
                 tf = new JTextField("", 20);
-                tf.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Search: "));
+                tf.setBorder(BorderFactory.createTitledBorder("Search: "));
                 name = "-1";
 
                 setAppSettings();
@@ -101,17 +101,17 @@ public class Gui extends JFrame {
                 this.search.setBounds(5, 5, 675, 50);
 
                 this.topButtons = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.topButtons.setBounds(5, 60, 675, 30);
+                this.topButtons.setBounds(5, 60, 675, 40);
 
                 this.answerField = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.answerField.setBounds(5, 95, 675, 240);
+                this.answerField.setBounds(5, 105, 675, 240);
 
                 this.bottomFunction = new JPanel(new GridLayout(1, 2, 5, 5));
-                this.bottomFunction.setBounds(5, 340, 675, 30);
+                this.bottomFunction.setBounds(5, 350, 675, 40);
 
                 this.bottomField = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.bottomField.setBounds(0, 370, 685, 250);
-                bottomField.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "You have borrowed: "));
+                this.bottomField.setBounds(0, 390, 685, 230);
+                bottomField.setBorder(BorderFactory.createTitledBorder("You have borrowed: "));
 
                 this.loginChange = new JPanel(new GridLayout(1, 1, 5, 5));
                 this.loginChange.setBounds(5, 620, 675, 35);
@@ -121,12 +121,13 @@ public class Gui extends JFrame {
                 tf.setBackground(Color.lightGray);
                 ta = new JTextArea();
                 ta.setBackground(Color.lightGray);
-                borrowedArea = new JTextArea();
-                borrowedArea.setBackground(Color.lightGray);
+                bottomInfo = new JTextArea();
+                bottomInfo.setBackground(Color.lightGray);
 
                 this.topLeftButton = new JButton("Search books");
                 this.topRightButton = new JButton("Search paper shelf");
-                this.inputID = new JTextField("Book ID to borrow", 20);
+                this.inputID = new JTextField(20);
+                inputID.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Book ID to borrow: "));
                 this.actonIDchosen = new JButton("Borrow this Book");
                 this.changeLoginType = new JButton("Change login");
 
@@ -149,7 +150,7 @@ public class Gui extends JFrame {
                 this.answerField.add(ta);
                 this.bottomFunction.add(inputID);
                 this.bottomFunction.add(actonIDchosen);
-                this.bottomField.add(borrowedArea);
+                this.bottomField.add(bottomInfo);
                 this.loginChange.add(changeLoginType);
 
                 //Set order of panels
@@ -166,7 +167,7 @@ public class Gui extends JFrame {
                 this.setResizable(false);
 
                 //Show what user currently has borrowed
-                this.setBorrowed(Backend.runQuery(this, "Borrow this Book", "5", "select * from books where borrower = ? ;", "library"));
+                this.setBottomInfo(Backend.runQuery(this, "Borrow this Book", "5", "select * from books where borrower = ? ;", "library"));
                 break;
             //***************************************************************************************** <--
             case "librarian":
@@ -174,7 +175,7 @@ public class Gui extends JFrame {
                 loginPassword = "abc12345";
 
                 tf = new JTextField("", 20);
-                tf.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Search books borrowed by: "));
+                tf.setBorder(BorderFactory.createTitledBorder("Search books borrowed by: "));
                 name = "-1";
 
                 setAppSettings();
@@ -185,17 +186,17 @@ public class Gui extends JFrame {
                 this.search.setBounds(5, 5, 675, 50);
 
                 this.topButtons = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.topButtons.setBounds(5, 60, 675, 30);
+                this.topButtons.setBounds(5, 60, 675, 40);
 
                 this.answerField = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.answerField.setBounds(5, 95, 675, 150);
+                this.answerField.setBounds(5, 105, 675, 150);
 
                 this.bottomFunction = new JPanel(new GridLayout(1, 2, 5, 5));
-                this.bottomFunction.setBounds(5, 250, 675, 30);
+                this.bottomFunction.setBounds(5, 260, 675, 40);
 
                 this.bottomField = new JPanel(new GridLayout(1, 1, 5, 5));
-                this.bottomField.setBounds(0, 285, 685, 335);
-                bottomField.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "All books in the library: "));
+                this.bottomField.setBounds(0, 300, 685, 320);
+                bottomField.setBorder(BorderFactory.createTitledBorder("All books in the library: "));
 
                 this.loginChange = new JPanel(new GridLayout(1, 1, 5, 5));
                 this.loginChange.setBounds(5, 620, 675, 35);
@@ -205,12 +206,13 @@ public class Gui extends JFrame {
                 tf.setBackground(Color.lightGray);
                 ta = new JTextArea();
                 ta.setBackground(Color.lightGray);
-                borrowedArea = new JTextArea();
-                borrowedArea.setBackground(Color.lightGray);
+                bottomInfo = new JTextArea();
+                bottomInfo.setBackground(Color.lightGray);
 
                 this.topLeftButton = new JButton("Search by id");
                 this.topRightButton = new JButton("Search by name");
-                this.inputID = new JTextField("Return book with ID", 20);
+                this.inputID = new JTextField(20);
+                inputID.setBorder(BorderFactory.createTitledBorder("Return book with ID: "));
                 this.actonIDchosen = new JButton("Return to shelf");
                 this.changeLoginType = new JButton("Change login");
 
@@ -221,7 +223,7 @@ public class Gui extends JFrame {
                 // ***********************************************************
                 ActionListener liblistenToBookId = action -> {
                     Backend.runCommand(this, action.getActionCommand(), inputID.getText());
-                    Backend.getAllOf(this, "books", "library");
+                    this.setBottomInfo(Backend.runQuery(this, "Select Books", "none", "select * from books;", "library"));
                 };
                 actonIDchosen.addActionListener(liblistenToBookId);
                 // ***********************************************************
@@ -236,7 +238,7 @@ public class Gui extends JFrame {
                 this.answerField.add(ta);
                 this.bottomFunction.add(inputID);
                 this.bottomFunction.add(actonIDchosen);
-                this.bottomField.add(borrowedArea);
+                this.bottomField.add(bottomInfo);
                 this.loginChange.add(changeLoginType);
 
                 //Set order of panels
@@ -252,7 +254,7 @@ public class Gui extends JFrame {
                 this.setVisible(true);
                 this.setResizable(false);
 
-                Backend.getAllOf(this, "books", "library");
+                this.setBottomInfo(Backend.runQuery(this, "Select Books", "none", "select * from books;", "library"));
 
                 break;
 
@@ -285,8 +287,8 @@ public class Gui extends JFrame {
                 tf.setBackground(Color.lightGray);
                 ta = new JTextArea();
                 ta.setBackground(Color.lightGray);
-                borrowedArea = new JTextArea();
-                borrowedArea.setBackground(Color.lightGray);
+                bottomInfo = new JTextArea();
+                bottomInfo.setBackground(Color.lightGray);
                 this.topLeftButton = new JButton("Insert new employee");
                 this.topRightButton = new JButton("Delete employee");
                 this.actonIDchosen = new JButton("Change employee values");
@@ -313,7 +315,7 @@ public class Gui extends JFrame {
                 this.bottomFunction.add(actonIDchosen);
                 this.topButtons.add(topLeftButton);
                 this.topButtons.add(topRightButton);
-                this.bottomField.add(borrowedArea);
+                this.bottomField.add(bottomInfo);
                 this.loginChange.add(changeLoginType);
 
                 //Set order of panels
@@ -328,7 +330,8 @@ public class Gui extends JFrame {
                 this.setResizable(false);
 
                 // Show all employees at the start of GUI
-                Backend.getAllOf(this, "employees", "employeeDB");
+                this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
+                //Backend.getAllOf(this, "employees", "employeeDB");
 
                 break;
             //***************************************************************************************** <--
@@ -341,8 +344,8 @@ public class Gui extends JFrame {
 
     }
 
-    public void setBorrowed(String text) {
-        this.borrowedArea.setText(text);
+    public void setBottomInfo(String text) {
+        this.bottomInfo.setText(text);
 
     }
 
@@ -421,7 +424,8 @@ public class Gui extends JFrame {
                                 Backend.updateValue(this, Field[i].getText(), "update employees set " + columnInput[i] + " = ? where id = " + Field[0].getText() + " ;", "employeeDB");
                             }
                         }
-                        Backend.getAllOf(this, "employees", "employeeDB");
+                        //Backend.getAllOf(this, "employees", "employeeDB");
+                        this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
                     }
                 }
                 break;
@@ -453,7 +457,7 @@ public class Gui extends JFrame {
                 if (result == JOptionPane.OK_OPTION) {
                     Backend.updateValue(this, "No need", "insert into employees (name, address, phonenumber1, phonenumber2, phonenumber3, salary, vacationleft) " +
                             "values ('" + Field[1].getText() + "','" + Field[2].getText() + "','" + Field[3].getText() + "','" + Field[4].getText() + "','" + Field[5].getText() + "','" + Field[6].getText() + "','" + Field[7].getText() + "') ;", "employeeDB");
-                    Backend.getAllOf(this, "employees", "employeeDB");
+                    this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
                 }
                 break;
             // *******************************************************************************************************************************
@@ -466,7 +470,7 @@ public class Gui extends JFrame {
                     int selectedOption = JOptionPane.showConfirmDialog(null, "Are you sure you want to DELETE this EMPLOYEE? \n\n" + employeeDeletion + "\n\n", "Deletion of employee!", JOptionPane.YES_NO_OPTION);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         Backend.updateValue(this, inputID.getText(), "delete from employees where id = ?", "employeeDB");
-                        Backend.getAllOf(this, "employees", "employeeDB");
+                        this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
                     }
                 }
                 break;
