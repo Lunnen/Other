@@ -7,6 +7,10 @@ public class Backend {
     public Backend() {
     }
 
+    public static String checkBorrowed(String input) {
+        return input != null ? "Lånad av kort: " + input : "LEDIG";
+    }
+
     public static boolean checkInput(String input, String comparePattern) {
         Pattern p = Pattern.compile(comparePattern);
 
@@ -20,21 +24,25 @@ public class Backend {
         return false;
     }
 
-    public static String checkBorrowed(String input) {
-        return input != null ? "Lånad av kort: " + input : "LEDIG";
-    }
-
     public static void runCommand(Gui gui, String inputButton, String input) {
         input = input.toLowerCase();
 
-       switch (inputButton){
-           case "Search paper shelf" -> runQuery(gui, inputButton, "%" + input + "%", "select title, shelf from papers where title like ? ;", "library");
-           case "Borrow this Book" -> runQuery(gui, inputButton, input, "select borrower from books where id = ?;", "library");
-           case "Search books" -> runQuery(gui, inputButton, "%" + input + "%", "select * from books where title like ? ;", "library");
-           case "Search by id" -> runQuery(gui, inputButton, input, "select * from books where borrower = ? ;", "library");
-           case "Search by name" -> runQuery(gui, inputButton, input, "select id, isbn, title, author, pages, class from books, borrowers where books.borrower=borrowers.librarycard and borrowername = ? ;", "library");
-           case "Return to shelf" -> updateValue(gui, input, "update books set borrower = NULL where id = ?;", "library");
-       }
+        if (inputButton.equals("Borrow this Book")) { // !! Better to have this IF, than to have an entire switch-case function in OLD style, just for this case.
+            if (runQuery(gui, "getIntValue", input, "select borrower from books where id = ?;", "library") == null) { // If the book's available to borrow. If not, nothing happens = You can't borrow a books that's already borrowed.
+                System.out.println("Im here");
+                updateValue(gui, input, "update books set borrower = 5 where id = ?;", "library"); //update borrower to id 5(customer) on selected
+                gui.setBorrowed(runQuery(gui, inputButton, "5", "select * from books where borrower = ?;", "library")); //<--- Customer borrowerID is 5
+            } else {
+                gui.set("Already borrowed by someone!");
+            }
+        }
+        switch (inputButton) {
+            case "Search paper shelf" -> runQuery(gui, inputButton, "%" + input + "%", "select title, shelf from papers where title like ? ;", "library");
+            case "Search books" -> runQuery(gui, inputButton, "%" + input + "%", "select * from books where title like ? ;", "library");
+            case "Search by id" -> runQuery(gui, inputButton, input, "select * from books where borrower = ? ;", "library");
+            case "Search by name" -> runQuery(gui, inputButton, input, "select id, isbn, title, author, pages, class from books, borrowers where books.borrower=borrowers.librarycard and borrowername = ? ;", "library");
+            case "Return to shelf" -> updateValue(gui, input, "update books set borrower = NULL where id = ?;", "library");
+        }
     }
 
     public static String runQuery(Gui gui, String inputButton, String input, String inputQuery, String inputDatabase) {
@@ -46,45 +54,27 @@ public class Backend {
                 String inputUsername = gui.loginUser;
                 String inputPassword = gui.loginPassword;
 
-                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/"+inputDatabase+"", inputUsername, inputPassword);
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/" + inputDatabase + "", inputUsername, inputPassword);
 
                 PreparedStatement p = connection.prepareStatement(inputQuery);
                 p.setString(1, input);
                 ResultSet rs = p.executeQuery();
 
                 while (rs.next()) {
-                    switch (inputButton){
-                        case "Search paper shelf":
-                            answer = answer + (rs.getString(1) + ",  " + rs.getString(2)) + "\n";
-                            break;
-
-                            /*
-                            REMOVE THIS PART from the method <--- needs to be done better
-                             */
-                        case "Borrow this Book":
-                            if (rs.getString(1) == null) { // If the book's available to borrow. If not, nothing happens = You can't borrow a books that's already borrowed.
-                                updateValue(gui, input, "update books set borrower = 5 where id = ?;", "library"); //update borrower to id 5(customer) on selected
-                                getWhatsBorrowed(gui, connection, "5"); //<--- Customer borrowerID is 5
-                            }
-                            break;
-                        case "Search books borrowed":
-                            answer = answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7)) ) + "\n";
-                            break;
-                        case "Search by name":
-                            answer = answer + (rs.getInt(1) + ",  " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) ) + "\n";
-                            break;
-                        case "Change employee values":
-                            answer = answer + (rs.getString(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + rs.getString(7)) + ", " + rs.getString(8) + "\n";
-                            break;
-                        default:
-                            answer = answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7))) + "\n";
-                            break;
-                    }
+                    answer = switch (inputButton) {
+                        case "getIntValue" -> (rs.getString(1));
+                        case "Search paper shelf" -> answer + (rs.getString(1) + ",  " + rs.getString(2)) + "\n";
+                        case "Search books borrowed" -> answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7))) + "\n";
+                        case "Search by name" -> answer + (rs.getInt(1) + ",  " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n";
+                        case "Change employee values" -> answer + (rs.getString(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + rs.getString(7)) + ", " + rs.getString(8) + "\n";
+                        case "Borrow this Book" -> answer + (rs.getInt(1) + ",  " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n";
+                        default -> answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7))) + "\n";
+                    };
                 }
                 p.close();
                 connection.close();
 
-                if(!inputButton.equals("Borrow this Book")){ //This command should run, unless you borrow a book.
+                if (!inputButton.equals("Borrow this Book") && !inputButton.equals("getIntValue")) { //This command should run, unless you borrow a book.
                     gui.set(!answer.equals("") ? answer : "No Result."); //If theres a result, show it. If not - show "No result".
                 }
 
@@ -92,7 +82,6 @@ public class Backend {
                 gui.set(e.toString());
             }
         }
-
         return answer;
     }
 
@@ -102,55 +91,19 @@ public class Backend {
             String inputUsername = gui.loginUser;
             String inputPassword = gui.loginPassword;
 
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/"+inputDatabase+"", inputUsername, inputPassword);
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/" + inputDatabase + "", inputUsername, inputPassword);
 
             PreparedStatement ps = connection.prepareStatement(inputQuery);
-            ps.setString(1, inputId);
+            if(! inputId.equals("No need")) { ps.setString(1, inputId); }
 
             ps.executeUpdate();
             ps.close();
+            connection.close();
         } catch (SQLException se) {
             gui.set(se.toString());
         }
     }
 
-    public static void getWhatsBorrowed(Gui gui, Connection conn, String input) {
-
-        try {
-            String answer = "";
-
-            PreparedStatement p = conn.prepareStatement("select * from books where borrower = ?;");
-
-            p.setString(1, input);
-
-            ResultSet rs = p.executeQuery();
-
-            while (rs.next()) {
-
-                answer = answer + (rs.getInt(1) + ",  " + rs.getString(2) + ",  " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n";
-            }
-            gui.setBorrowed(answer);
-
-        } catch (SQLException throwables) {
-            gui.set(throwables.toString());
-        }
-    }
-
-    public static void atstartCheckWhatsBorrowed(Gui gui) {
-
-            try {
-                String inputUsername = gui.loginUser;
-                String inputPassword = gui.loginPassword;
-
-                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/library", inputUsername, inputPassword);
-
-                getWhatsBorrowed(gui, connection, "5");
-                connection.close();
-
-            } catch (Exception e) {
-                gui.set(e.toString());
-            }
-    }
     public static void getAllOf(Gui gui, String inputTable, String inputDatabase) {
 
         String answer = "";
@@ -159,31 +112,31 @@ public class Backend {
             String inputUsername = gui.loginUser;
             String inputPassword = gui.loginPassword;
 
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/"+inputDatabase+"", inputUsername, inputPassword);
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/" + inputDatabase + "", inputUsername, inputPassword);
 
-            PreparedStatement ps = connection.prepareStatement("select * from "+inputTable+";");
-            //ps.setString(1, inputId);
+            PreparedStatement ps = connection.prepareStatement("select * from " + inputTable + ";");
+            //ps.setString(1, null);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                if(inputDatabase.equals("library")){
-                    answer = answer + (rs.getInt(1) + ",  " + rs.getString(2) + ",  " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + ", " + checkBorrowed(rs.getString(7) ) + "\n";
+                if (inputDatabase.equals("library")) {
+                    answer = answer + (rs.getInt(1) + ",  " + rs.getString(2) + ",  " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + ", " + checkBorrowed(rs.getString(7)) + "\n";
                 }
-                if(inputDatabase.equals("employeeDB")){
-                    answer = answer + ( "ID: " + rs.getInt(1) + ",  "
+                if (inputDatabase.equals("employeeDB")) {
+                    answer = answer + ("ID: " + rs.getInt(1) + ",  "
                             + "Name: " + rs.getString(2) + ", "
-                            + "Salary: " + rs.getInt(7)  + ", "
+                            + "Salary: " + rs.getInt(7) + ", "
                             + "Vacation days left: " + rs.getInt(8) + "\n"
                             + "Address: " + rs.getString(3) + ", "
-                            + "Phone numbers: " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6))  + "\n\n";
+                            + "Phone numbers: " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n\n";
                 }
-
             }
             gui.setBorrowed(answer);
 
             ps.executeQuery();
             ps.close();
+            connection.close();
         } catch (SQLException se) {
             gui.set(se.toString());
         }
