@@ -4,24 +4,14 @@ import java.util.regex.Pattern;
 
 public class Backend {
 
-    public Backend() {
-    }
-
-    public static String checkBorrowed(String input) {
-        return input != null ? "Lånad av kort: " + input : "LEDIG";
+    public static String checkBorrowed(String input, Boolean ifCustomerAsking) {
+        return ifCustomerAsking ? (input != null ? "UTLÅNAD" : "LEDIG") : (input != null ? "Lånad av kort: " + input : "LEDIG");
     }
 
     public static boolean checkInput(String input, String comparePattern) {
         Pattern p = Pattern.compile(comparePattern);
-
         Matcher matcher = p.matcher(input);
-
-        while (matcher.find()) {
-            if (matcher.group().length() != 0) {
-                return true;
-            }
-        }
-        return false;
+        return matcher.find();
     }
 
     /*  1. If the book's available to borrow. If not, nothing happens = You can't borrow a books that's already borrowed.
@@ -72,9 +62,9 @@ public class Backend {
                         case "getIntValue" -> (rs.getString(1));
                         case "Search paper shelf" -> answer + (rs.getString(1) + ",  " + rs.getString(2)) + "\n";
                         case "Search by name", "Borrow this Book" -> answer + (rs.getInt(1) + ",  " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n";
-                        case "Change employee values" -> answer + (rs.getString(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + rs.getString(7)) + ", " + rs.getString(8) + "\n";
+                        case "Change employee values" -> answer + (rs.getString(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + rs.getInt(7)) + ", " + rs.getInt(8);
                         case "Select Employees" -> answer = answer + ("ID: " + rs.getInt(1) + ",  " + "Name: " + rs.getString(2) + ", " + "Salary: " + rs.getInt(7) + ", " + "Vacation days left: " + rs.getInt(8) + "\n" + "Address: " + rs.getString(3) + ", " + "Phone numbers: " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6)) + "\n\n";
-                        default -> answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7))) + "\n";
+                        default -> answer + (rs.getInt(1) + ", " + rs.getString(2) + ", " + rs.getString(3) + ", " + rs.getString(4) + ", " + rs.getString(5) + ", " + rs.getString(6) + ", " + checkBorrowed(rs.getString(7), (!inputButton.equals("Select Books")))) + "\n";
                     };
                 }
                 p.close();

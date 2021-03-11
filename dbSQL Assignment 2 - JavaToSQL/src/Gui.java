@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -378,7 +379,12 @@ public class Gui extends JFrame {
                         Field[i] = new JTextField(20);
                     }
 
-                    JPanel myPanel = new JPanel(new GridLayout(8, 1, 5, 5));
+                    JButton updateBtn = new JButton("Update value");
+                    JButton cancelButton = new JButton("Cancel");
+
+                    JButton validate = new JButton("Validate");
+                    JPanel myPanel = new JPanel(new GridLayout(9, 1, 5, 5));
+                    myPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                     myPanel.add(new JLabel("Employee ID chosen: "));
                     myPanel.add(Field[0]);
                     myPanel.add(new JLabel("Name: "));
@@ -387,14 +393,16 @@ public class Gui extends JFrame {
                     myPanel.add(Field[2]);
                     myPanel.add(new JLabel("Phone number 1:"));
                     myPanel.add(Field[3]);
-                    myPanel.add(new JLabel("Phone number 2:"));
+                    myPanel.add(new JLabel("Phone number 2: *Optional"));
                     myPanel.add(Field[4]);
-                    myPanel.add(new JLabel("Phone number 3:"));
+                    myPanel.add(new JLabel("Phone number 3: *Optional"));
                     myPanel.add(Field[5]);
                     myPanel.add(new JLabel("Salary:"));
                     myPanel.add(Field[6]);
                     myPanel.add(new JLabel("Vacation days left:"));
                     myPanel.add(Field[7]);
+                    myPanel.add(updateBtn);
+                    myPanel.add(cancelButton);
 
                     //Get all the current values of chose employee
                     String getValues = Backend.runQuery(this, "Change employee values", Field[0].getText(), "select * from employees where id = ?;", "EmployeeDB");
@@ -404,6 +412,11 @@ public class Gui extends JFrame {
                     for (int i = 1; i < gottenValues.length; i++) {
                         Field[i].setText(gottenValues[i]);
                     }
+
+                    ActionListener validation = action -> {
+
+                    };
+                    validate.addActionListener(validation);
 
                     // Name of the columns that's updated
                     String[] columnInput = new String[8];
@@ -415,50 +428,97 @@ public class Gui extends JFrame {
                     columnInput[6] = "salary";
                     columnInput[7] = "vacationleft";
 
-                    int result = JOptionPane.showConfirmDialog(null, myPanel, "Employee values to update", JOptionPane.OK_CANCEL_OPTION);
-                    if (result == JOptionPane.OK_OPTION) {
+                    JDialog dialog = new JDialog(this, "Change employee values");
 
-                        /* If a change has been entered, update to database. */
-                        for (int i = 1; i < columnInput.length; i++) {
-                            if (!Field[i].getText().equals(gottenValues[i])) {
-                                Backend.updateValue(this, Field[i].getText(), "update employees set " + columnInput[i] + " = ? where id = " + Field[0].getText() + " ;", "employeeDB");
+                    dialog.add(myPanel);
+                    dialog.setSize(400, 300);
+                    dialog.setIconImage(new ImageIcon("./ico/icon.png").getImage());
+                    dialog.setLocationRelativeTo(null); //Centers window location upon creation
+                    dialog.setVisible(true);
+                    dialog.setResizable(false);
+
+                    ActionListener dialogListener = action -> {
+                        // Checks if the inputed values are in the right format
+                        if (action.getActionCommand().equals("Update value")) {
+                            if (runFieldCheck(Field)) { // IF field is validated correctly, accept update of database.
+                                /* If a change has been entered, update to database. */
+                                for (int i = 1; i < columnInput.length; i++) {
+                                    if (!Field[i].getText().equals(gottenValues[i])) {
+                                        Backend.updateValue(this, Field[i].getText(), "update employees set " + columnInput[i] + " = ? where id = " + Field[0].getText() + " ;", "employeeDB");
+                                    }
+                                }
+                                this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
+                                dialog.dispose();
+                            } else {
+                                runFieldValidation(Field);
                             }
+                        } else {
+                            dialog.dispose();
                         }
-                        //Backend.getAllOf(this, "employees", "employeeDB");
-                        this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
-                    }
+                    };
+                    cancelButton.addActionListener(dialogListener);
+                    updateBtn.addActionListener(dialogListener);
                 }
                 break;
             // *******************************************************************************************************************************
             case "insert":
+
                 JTextField[] Field = new JTextField[8];
 
                 for (int i = 0; i < Field.length; i++) {
                     Field[i] = new JTextField(20);
                 }
 
-                JPanel myPanel = new JPanel(new GridLayout(7, 1, 5, 5));
+                JButton insertion = new JButton("Insert to Database");
+                JButton cancelButton = new JButton("Cancel");
+
+                JPanel myPanel = new JPanel(new GridLayout(8, 1, 5, 5));
+                myPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 myPanel.add(new JLabel("Name: "));
                 myPanel.add(Field[1]);
                 myPanel.add(new JLabel("Address:"));
                 myPanel.add(Field[2]);
                 myPanel.add(new JLabel("Phone number 1:"));
                 myPanel.add(Field[3]);
-                myPanel.add(new JLabel("Phone number 2:"));
+                myPanel.add(new JLabel("Phone number 2: *Optional"));
                 myPanel.add(Field[4]);
-                myPanel.add(new JLabel("Phone number 3:"));
+                myPanel.add(new JLabel("Phone number 3: *Optional"));
                 myPanel.add(Field[5]);
                 myPanel.add(new JLabel("Salary:"));
                 myPanel.add(Field[6]);
                 myPanel.add(new JLabel("Vacation days left:"));
                 myPanel.add(Field[7]);
+                myPanel.add(insertion);
+                myPanel.add(cancelButton);
 
-                int result = JOptionPane.showConfirmDialog(null, myPanel, "Insert new employee", JOptionPane.OK_CANCEL_OPTION);
-                if (result == JOptionPane.OK_OPTION) {
-                    Backend.updateValue(this, "No need", "insert into employees (name, address, phonenumber1, phonenumber2, phonenumber3, salary, vacationleft) " +
-                            "values ('" + Field[1].getText() + "','" + Field[2].getText() + "','" + Field[3].getText() + "','" + Field[4].getText() + "','" + Field[5].getText() + "','" + Field[6].getText() + "','" + Field[7].getText() + "') ;", "employeeDB");
-                    this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
-                }
+                JDialog dialog = new JDialog(this, "Insert new employee");
+
+                dialog.add(myPanel);
+                dialog.setSize(400, 300);
+                dialog.setIconImage(new ImageIcon("./ico/icon.png").getImage());
+                dialog.setLocationRelativeTo(null); //Centers window location upon creation
+                dialog.setVisible(true);
+                dialog.setResizable(false);
+
+                ActionListener dialogListener = action -> {
+                    // Checks if the inputed values are in the right format
+                    if (action.getActionCommand().equals("Insert to Database")) {
+                        if (runFieldCheck(Field)) { // IF field is validated correctly, accept update of database.
+                            Backend.updateValue(this, "No need", "insert into employees (name, address, phonenumber1, phonenumber2, phonenumber3, salary, vacationleft) " +
+                                    "values ('" + Field[1].getText() + "','" + Field[2].getText() + "','" + Field[3].getText() + "','" + Field[4].getText() + "','" + Field[5].getText() + "','" + Field[6].getText() + "','" + Field[7].getText() + "') ;", "employeeDB");
+                            this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
+                            dialog.dispose();
+                        } else {
+                            runFieldValidation(Field);
+                        }
+                    } else {
+                        dialog.dispose();
+                    }
+
+                };
+                cancelButton.addActionListener(dialogListener);
+                insertion.addActionListener(dialogListener);
+
                 break;
             // *******************************************************************************************************************************
             case "delete":
@@ -467,7 +527,7 @@ public class Gui extends JFrame {
 
                 if (employeeDeletion.length() > 0) { // IF employee chosen exist, continue.
 
-                    int selectedOption = JOptionPane.showConfirmDialog(null, "Are you sure you want to DELETE this EMPLOYEE? \n\n" + employeeDeletion + "\n\n", "Deletion of employee!", JOptionPane.YES_NO_OPTION);
+                    int selectedOption = JOptionPane.showConfirmDialog(null, "Are you sure you want to DELETE this EMPLOYEE? \n\n" + employeeDeletion + "\n\n", "Deletion of employee!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (selectedOption == JOptionPane.YES_OPTION) {
                         Backend.updateValue(this, inputID.getText(), "delete from employees where id = ?", "employeeDB");
                         this.setBottomInfo(Backend.runQuery(this, "Select Employees", "none", "select * from employees;", "employeeDB"));
@@ -475,6 +535,26 @@ public class Gui extends JFrame {
                 }
                 break;
         }
+    }
+    /* Return true if all fields have valid input */
+    public boolean runFieldCheck(JTextField[] Field) {
+        return (Backend.checkInput(Field[1].getText(), "^" + "[A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,}([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})" + "$") &&
+                Backend.checkInput(Field[2].getText(), "^" + "[A-ZÅÄÖ][a-zåäö]+([\\s]{1}[A-ZÅÄÖa-zåäö]+)?([\\s]{1}[A-ZÅÄÖa-zåäö]+)?([\\s]{1}[A-ZÅÄÖa-zåäö]+)?[\\s][0-9]{1,3}([\\-][0-9]{1,3})?([\\s][Ll][Gg][Hh][\\s][0-9]{4})?" + "$") &&
+                Backend.checkInput(Field[3].getText(), "^" + "0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}" + "$") &&
+                Backend.checkInput(Field[4].getText(), "(^$)|(^0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}$)") &&
+                Backend.checkInput(Field[5].getText(), "(^$)|(^0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}$)") &&
+                Backend.checkInput(Field[6].getText(), "^" + "\\d{1,8}" + "$") &&
+                Backend.checkInput(Field[7].getText(), "^" + "\\d{1,3}" + "$"));
+    }
+    public void runFieldValidation(JTextField[] Field) {
+        /* Checks if the inputed values are in the right format and colors the lines in green or red depending on if they're correct */
+        Field[1].setBorder(new LineBorder((Backend.checkInput(Field[1].getText(), "^" + "[A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,}([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})?([A-ZÅÄÖ][a-zåäö\\-\\s\\.]{1,})" + "$") ? Color.GREEN : Color.RED), 2));
+        Field[2].setBorder(new LineBorder((Backend.checkInput(Field[2].getText(), "^" + "[A-ZÅÄÖ][a-zåäö]+([\\s]{1}[A-ZÅÄÖa-zåäö]+)?([\\s]{1}[A-ZÅÄÖa-zåäö]+)?([\\s]{1}[A-ZÅÄÖa-zåäö]+)?[\\s][0-9]{1,3}([\\-][0-9]{1,3})?([\\s][Ll][Gg][Hh][\\s][0-9]{4})?" + "$") ? Color.GREEN : Color.RED), 2));
+        Field[3].setBorder(new LineBorder((Backend.checkInput(Field[3].getText(), "^" + "0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}" + "$") ? Color.GREEN : Color.RED), 2));
+        Field[4].setBorder(new LineBorder((Backend.checkInput(Field[4].getText(), "(^$)|(^0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}$)") ? Color.GREEN : Color.RED), 2));
+        Field[5].setBorder(new LineBorder((Backend.checkInput(Field[5].getText(), "(^$)|(^0[0-9]{1,3}[\\s/-][0-9\\s]{5,10}$)") ? Color.GREEN : Color.RED), 2));
+        Field[6].setBorder(new LineBorder((Backend.checkInput(Field[6].getText(), "^" + "\\d{1,8}" + "$") ? Color.GREEN : Color.RED), 2));
+        Field[7].setBorder(new LineBorder((Backend.checkInput(Field[7].getText(), "^" + "\\d{1,3}" + "$") ? Color.GREEN : Color.RED), 2));
     }
 }
 
